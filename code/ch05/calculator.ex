@@ -31,6 +31,7 @@ defmodule Calculator do
   defp process_message(current_value, {:div, value}) do
     current_value / value
   end
+  # TODO: when is this reached?
   defp process_message(current_value, invalid_request) do
     IO.puts("invalid request #{inspect(invalid_request)}")
     current_value
