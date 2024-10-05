@@ -8,8 +8,17 @@ defmodule TodoList do
 
   #instantiates the TodoList struct. Note that the struct has the same
   #name as the module
-  def new(), do: %TodoList{}
-
+  # def new(), do: %TodoList{}
+  def new(entries \\ []) do
+    Enum.reduce(
+      entries,
+      %TodoList{},
+      fn entry, todo_list_acc ->
+        add_entry(todo_list_acc, entry)
+        # could also do: &add_entry(&2, &1) but that feels less clear
+      end
+    )
+  end
   def add_entry(todo_list, entry) do
     # remember, Map.put/3's arguments are (map, key, value)
     # First, add the next id in the sequence to the entry:
