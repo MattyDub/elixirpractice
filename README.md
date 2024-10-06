@@ -1,6 +1,6 @@
 # elixirpractice
 
-This repository contains my work as I'm learning [Elixir](https://elixir-lang.org) via the book [Elixir in Action](https://www.manning.com/books/elixir-in-action) by Saša Jurić.
+This repository contains my work as I'm learning [Elixir](https://elixir-lang.org) via the book [Elixir in Action](https://www.manning.com/books/elixir-in-action) by Saša Jurić. A lot of the code has comments that are my notes to myself as a mnemonic/pedagogical aid. If anybody ever sees this and finds it helpful, great, but it's really more for my own learning process.
 
 ## To use
 You probably won't want to use anything here, but if you do, try this:
