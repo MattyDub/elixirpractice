@@ -38,6 +38,12 @@ defmodule Calculator do
   end
 
   # The interface code is below here:
+  # Example usage:
+  # iex(1) server_pid = Calculator.start()
+  # iex(2) Calculator.add(server_pid, 5)
+  # iex(3) Calculator.mul(server_pid, 10)
+  # iex(4) Calculator.value(server_pid)
+  # # returns 50
   # value/1 synchronously requests the value from the server
   def value(server_pid) do
     send(server_pid, {:value, self()})
