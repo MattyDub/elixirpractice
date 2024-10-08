@@ -32,6 +32,20 @@ end
 # This is the "callback" module. It implements the specific hooks that the generic
 # server needs; in this case, that's init/0 and handle_call/2.
 defmodule KeyValueStore do
+  # interface functions
+  def start do
+    ServerProcess.start(KeyValueStore)
+  end
+
+  def put(pid, key, value) do
+    ServerProcess.call(pid, {:put, key, value})
+  end
+
+  def get(pid, key) do
+    ServerProcess.call(pid, {:get, key})
+  end
+
+  # callback functions
   def init do
     %{}
   end
