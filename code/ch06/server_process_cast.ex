@@ -1,15 +1,13 @@
 # This module adapts the server_process module to use "casts" (asynchronous messages).
 defmodule ServerProcess do
   def start(callback_module) do
-    # Pedagogically, why didn't the author use registered processes here?
     spawn(fn ->
       initial_state = callback_module.init()
       loop(callback_module, initial_state)
     end)
   end
 
-  # call/2 and loop/2 should look very familiar after ch 05, as these are
-  # now well-established patterns.
+  # In OTP, "call" is synchronous and "cast" is async
   def call(server_pid, request) do
     send(server_pid, {:call, request, self()})
     receive do
@@ -27,6 +25,7 @@ defmodule ServerProcess do
         {response, new_state} = callback_module.handle_call(request, current_state)
         send(caller, {:response, response})
         loop(callback_module, new_state)
+      # ":cast" is fire-and-forget, so we just call the handler in the callback module and recur
       {:cast, request} ->
         new_state = callback_module.handle_cast(request, current_state)
         loop(callback_module, new_state)
@@ -34,8 +33,6 @@ defmodule ServerProcess do
   end
 end
 
-# This is the "callback" module. It implements the specific hooks that the generic
-# server needs; in this case, that's init/0 and handle_call/2.
 defmodule KeyValueStore do
   # interface functions
   def start do
@@ -43,10 +40,12 @@ defmodule KeyValueStore do
   end
 
   def put(pid, key, value) do
+    # Putting things in the KV store can be asynchronous, so we use cast
     ServerProcess.cast(pid, {:put, key, value})
   end
 
   def get(pid, key) do
+    # We want to get the response for get/2, so this is synchronous
     ServerProcess.call(pid, {:get, key})
   end
 
@@ -59,9 +58,11 @@ defmodule KeyValueStore do
     {Map.get(state, key), state}
   end
 
-  def handle_call({:put, key, value}, state) do
-    {:ok, Map.put(state, key, value)}
-  end
+  # Don't need this anymore, since :put is asynchronous; commenting out to show
+  # the delta from server_process.ex
+  # def handle_call({:put, key, value}, state) do
+  #   {:ok, Map.put(state, key, value)}
+  # end
 
   def handle_cast({:put, key, value}, state) do
     Map.put(state, key, value)
