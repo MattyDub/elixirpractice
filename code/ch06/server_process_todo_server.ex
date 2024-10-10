@@ -6,8 +6,6 @@ defmodule ServerProcess do
   # @process_name :process_name
 
   def start(callback_module) do
-    # register the server process with the name from the attribute. Registering
-    # *requires* an atom.
     spawn(fn ->
       initial_state = callback_module.init()
       loop(callback_module, initial_state)
@@ -52,6 +50,14 @@ defmodule TodoList do
     entry = state.entries
       |> Stream.filter(fn {_, entry} -> entry.date == date end)
       |> Enum.map(fn {_, entry} -> entry end)
+    # The first time I wrote this, I only returned the value of the pipeline
+    # above. I had missed that ServerProcess.loop/2 expected {response, state}
+    # and I only returned the response. This presented as the following error:
+    # 23:56:16.292 [error] Process #PID<0.114.0> raised an exception
+    # ** (MatchError) no match of right hand side value: [%{id: 1, date: ~D[2024-10-11], title: "foo"}]
+    #     code/ch06/server_process_todo_server.ex:32: ServerProcess.loop/2
+    # That error basically meant that the response from handle_call couldn't be
+    # destructured into the expected values.
     {entry, state}
   end
 
