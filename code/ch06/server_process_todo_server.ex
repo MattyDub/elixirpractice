@@ -40,6 +40,7 @@ end
 
 defmodule TodoList do
   defstruct auto_id: 1, entries: %{}
+  @process_name :process_name
 
   # callback functions
   def init do
@@ -82,18 +83,18 @@ defmodule TodoList do
 
   # interface functions:
   def start do
-    ServerProcess.start(TodoList)
+    Process.register(ServerProcess.start(TodoList), @process_name)
   end
 
-  def add_entry(pid, entry) do
-    ServerProcess.cast(pid, {:add_entry, entry})
+  def add_entry(entry) do
+    ServerProcess.cast(@process_name, {:add_entry, entry})
   end
 
-  def entries(pid, date) do
-    ServerProcess.call(pid, {:entries, date})
+  def entries(date) do
+    ServerProcess.call(@process_name, {:entries, date})
   end
   # TODO: re-add this clause
-  def entries(pid) do
-    ServerProcess.call(pid, {:entries})
+  def entries do
+    ServerProcess.call(@process_name, {:entries})
   end
 end
