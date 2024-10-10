@@ -61,6 +61,12 @@ defmodule TodoList do
     {entry, state}
   end
 
+  def handle_call({:entries}, state) do
+    entries = state.entries
+      |> Enum.map(fn {_, entry} -> entry end)
+    {entries, state}
+  end
+
   def handle_cast({:add_entry, entry}, state) do
     entry = Map.put(entry, :id, state.auto_id)
     new_entries = Map.put(
@@ -87,8 +93,7 @@ defmodule TodoList do
     ServerProcess.call(pid, {:entries, date})
   end
   # TODO: re-add this clause
-  # def entries(todo_list) do
-  #   todo_list.entries
-  #   |> Enum.map(fn {_, entry} -> entry end)
-  # end
+  def entries(pid) do
+    ServerProcess.call(pid, {:entries})
+  end
 end
