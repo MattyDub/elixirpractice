@@ -3,15 +3,18 @@ defmodule KeyValueStore do
   # into this module. Below, we override some of them.
   use GenServer
 
+  @impl GenServer
   def init(_) do
     # This has to return the format {:ok, <initial state>}
     {:ok, %{}}
   end
 
+  @impl GenServer
   def handle_cast({:put, key, value}, state) do
     {:noreply, Map.put(state, key, value)}
   end
 
+  @impl GenServer
   def handle_call({:get, key}, _, state) do
     # The second argument here is a tuple that contains the request id
     # and the pid of the caller. We don't need it here, so it's ignored.
