@@ -1,5 +1,5 @@
-# This file is like todo_server_gen_server.ex, but I looked at the example code
-# and Jurić factored this into two modules, so I'm going to do that too.
+# OK this is basically following the instructions from page 181, where we refactor
+# this to be more "mix"-y.
 
 defmodule Todo.Server do
   use GenServer
