@@ -21,6 +21,13 @@ defmodule Todo.Server do
     GenServer.call(todo_server, {:entries})
   end
 
+  # On pp 193-4, Jurić points out that long-running inits are deprecated,
+  # as they can block other processes. A workaround is to have init/1
+  # send() a message to its process, and then do the long-running initialization
+  # in handle_info/2. This has a potential problem that if the process was
+  # registered by name, it's possible that the process might receive a
+  # message prior to the initialization. You can prevent this by manually
+  # registering the process in init/1.
   @impl GenServer
   def init(list_name) do
     {:ok, {list_name, Todo.Database.get(list_name) || Todo.List.new()}}
