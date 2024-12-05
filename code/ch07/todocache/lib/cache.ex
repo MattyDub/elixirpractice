@@ -5,6 +5,7 @@ defmodule Todo.Cache do
   # behaviour functions
   @impl GenServer
   def init(_) do
+    Todo.Database.start()
     {:ok, %{}}
   end
 
