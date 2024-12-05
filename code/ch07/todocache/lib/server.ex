@@ -5,8 +5,8 @@ defmodule Todo.Server do
   use GenServer
 
   # interface functions
-  def start do
-    GenServer.start(Todo.Server, nil)
+  def start(list_name) do
+    GenServer.start(Todo.Server, list_name)
   end
 
   def add_entry(todo_server, new_entry) do
@@ -22,23 +22,24 @@ defmodule Todo.Server do
   end
 
   @impl GenServer
-  def init(_) do
-    {:ok, Todo.List.new()}
+  def init(list_name) do
+    {:ok, {list_name, Todo.List.new()}}
   end
 
   @impl GenServer
-  def handle_call({:entries, date}, _, state) do
-    {:reply, Todo.List.entries(state, date), state}
+  def handle_call({:entries, date}, _, {list_name, todo_list}) do
+    {:reply, Todo.List.entries(todo_list, date), {list_name, todo_list}}
   end
 
   @impl GenServer
-  def handle_call({:entries}, _, state) do
-    {:reply, Todo.List.entries(state), state}
+  def handle_call({:entries}, _, {list_name, todo_list}) do
+    {:reply, Todo.List.entries(todo_list), {list_name, todo_list}}
   end
 
   @impl GenServer
-  def handle_cast({:add_entry, entry}, state) do
-    {:noreply, Todo.List.add_entry(state, entry)}
+  def handle_cast({:add_entry, entry}, {list_name, todo_list}) do
+    new_list = Todo.List.add_entry(todo_list, entry)
+    {:noreply, {list_name, new_list}}
   end
 
 end
