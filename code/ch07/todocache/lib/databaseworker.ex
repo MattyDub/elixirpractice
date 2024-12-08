@@ -5,8 +5,6 @@
 defmodule Todo.DatabaseWorker do
   use GenServer
 
-  @persist_folder "./persist"
-
   # Note we don't use a :name key, as we need multiple of these workers.
   def start(folder_name) do
     GenServer.start(__MODULE__, folder_name)
@@ -22,12 +20,8 @@ defmodule Todo.DatabaseWorker do
     GenServer.call(worker, {:get, key})
   end
 
-  # The exercise didn't say to nest these under a folder, but I didn't want
-  # my filesystem getting cluttered with lots of little files all over the
-  # place, hence `db_folder`.
   @impl GenServer
-  def init(folder_name) do
-    db_folder = Path.join(@persist_folder, folder_name)
+  def init(db_folder) do
     File.mkdir_p!(db_folder)
     {:ok, db_folder}
   end
