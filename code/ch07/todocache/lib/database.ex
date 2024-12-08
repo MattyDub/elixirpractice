@@ -18,7 +18,11 @@ defmodule Todo.Database do
   @impl GenServer
   def init(_) do
     File.mkdir_p!(@db_folder)
-    {:ok, nil}
+    worker_map = for x <- 0..2, into: %{} do
+      {:ok, worker} = Todo.DatabaseWorker.start(@db_folder)
+      {x, worker}
+    end
+    {:ok, worker_map}
   end
 
   # Storing the data is done via a cast. This allows the cast-er to "fire
