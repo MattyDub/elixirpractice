@@ -31,6 +31,7 @@ defmodule Todo.DatabaseWorker do
     key
     |> file_name(db_folder)
     |> File.write!(:erlang.term_to_binary(data))
+    # IO.puts("pid: #{inspect(self())} stores: {#{inspect(key)} => #{inspect(data)}}")
 
     {:noreply, db_folder}
   end
