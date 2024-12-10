@@ -1,7 +1,6 @@
-# This is part of the exercise described on pg. 198-199. Persisting the data
-# via a process like this allows for synchronizing access to a particular
-# Todo list, as only this process will be able to access it. The Todo.Database
-# module calls this, which does the actual synchronization.
+# Called by Todo.Database. Since this reads from and writes to disk for a given key
+# (see choose_worker/1 in Todo.Database), it handles synchronization via
+# Erlang/Elixir processes.
 defmodule Todo.DatabaseWorker do
   use GenServer
 
