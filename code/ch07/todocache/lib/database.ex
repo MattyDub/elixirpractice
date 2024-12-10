@@ -3,16 +3,50 @@ defmodule Todo.Database do
 
   @db_folder "./persist"
 
+  # This is the solution that Jurić came up with:
+  defp choose_worker(key) do
+    GenServer.call(__MODULE__, {:choose_worker, key})
+  end
+
+  @impl GenServer
+  def handle_call({:choose_worker, key}, _, worker_map) do
+    key = :erlang.phash2(key, 3)
+    {:reply, Map.get(worker_map, key), worker_map}
+  end
+
+  # This was my (incorrect) solution to how to create choose_worker. This works,
+  # but is not idiomatic - since the worker_map is the state for this process,
+  # we should be interacting with the state via call(). I'm leaving this here
+  # for pedagogical purposes as an example of what NOT to do.
+  # defp choose_worker(worker_map, key) do
+  #   key = :erlang.phash2(key, 3)
+  #   worker_map[key]
+  # end
+
   def start do
     GenServer.start(__MODULE__, nil, name: __MODULE__)
   end
 
   def store(key, data) do
-    GenServer.cast(__MODULE__, {:store, key, data})
+    # So this threading approach is the correct way:
+    key
+    |> choose_worker()
+    |> Todo.DatabaseWorker.store(key, data)
+
+    # This was the incorrect way. It's not wrong, it's just not idiomatic.
+    # By not interacting with the process state correctly for choose_worker,
+    # I kinda painted myself into the corner of using call and cast in
+    # Database. Again, leaving this for pedagogical purposes:
+    # GenServer.cast(__MODULE__, {:store, key, data})
   end
 
   def get(key) do
-    GenServer.call(__MODULE__,  {:get, key})
+    key
+    |> choose_worker()
+    |> Todo.DatabaseWorker.get(key)
+
+    # See comments in store/2 above.
+    # GenServer.call(__MODULE__, {:get, key})
   end
 
   @impl GenServer
@@ -25,28 +59,19 @@ defmodule Todo.Database do
     {:ok, worker_map}
   end
 
-  # Storing the data is done via a cast. This allows the cast-er to "fire
-  # and forget", but it also doesn't know if the store message was even
-  # received.
-  @impl GenServer
-  def handle_cast({:store, key, data}, state) do
-    key
-    |> file_name()
-    |> File.write!(:erlang.term_to_binary(data))
+  # See comments for choose_worker/1 and store/2 above for why these are here:
+  # @impl GenServer
+  # def handle_cast({:store, key, data}, worker_map) do
+  #   worker = choose_worker(worker_map, key)
+  #   Todo.DatabaseWorker.store(worker, key, data)
+  #   {:noreply, worker_map}
+  # end
 
-    {:noreply, state}
-  end
+  # @impl GenServer
+  # def handle_call({:get, key}, _, worker_map) do
+  #   worker = choose_worker(worker_map, key)
+  #   data = Todo.DatabaseWorker.get(worker, key)
+  #   {:reply, data, worker_map}
+  # end
 
-  @impl GenServer
-  def handle_call({:get, key}, _, state) do
-    data = case File.read(file_name(key)) do
-      {:ok, contents} -> :erlang.binary_to_term(contents)
-      _ -> nil
-    end
-    {:reply, data, state}
-  end
-
-  defp file_name(key) do
-    Path.join(@db_folder, to_string(key))
-  end
 end
